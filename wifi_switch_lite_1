@@ -1,0 +1,203 @@
+esphome:
+  name: wifi_switch_lite_1
+  platform: ESP8266
+  board: esp12e
+  on_boot:
+    - priority: 300.0 # after sensor setup, before WIFI initialization 
+      then:
+        - light.turn_on: # indication that the controller has power
+            id: strip
+            brightness: 70%
+            red: 100%
+            green: 0%
+            blue: 0%
+    - priority: 200.0 # after WIFI initialization
+      then:
+        - light.turn_on: # indication that the controller is looking for a wifi connection
+            id: strip
+            brightness: 70%
+            red: 0%
+            green: 0%
+            blue: 100%
+        - delay: '00:00:05'    
+    - priority: -100.0 # everything is initialized, system is online - if condition waits for connection
+      then:
+        if:
+          condition:
+            wifi.connected:
+          then:
+            - light.turn_on: # indication of wifi connection confirmation
+                id: strip
+                brightness: 70%
+                red: 0%
+                green: 100%
+                blue: 0%
+            - delay: '00:00:05'
+            - light.turn_off: # turns off light waiting on automation to start
+                id: strip
+web_server:
+  port: 80 
+  
+wifi:
+  ssid: "MySSID"
+  password: "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+  manual_ip:
+   # Set this to the IP of the ESP
+   static_ip: 10.14.12.132
+   # Set this to the IP address of the router. Often ends with .1
+   gateway: 10.14.12.1
+   # The subnet of the network. 255.255.255.0 works for most home networks.
+   subnet: 255.255.255.0
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "wifi_switch_lite_1"
+    password: "12345678"
+
+captive_portal:
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+
+mqtt:
+  broker: 10.14.12.131
+  username: wifisw
+  password: XXXXXX
+
+ota:
+
+http_request:
+  useragent: esphome/device
+  timeout: 10s
+
+light:
+  - platform: neopixelbus
+    type: GRB
+    variant: WS2812X
+    pin: 3
+    num_leds: 1
+    name: "ws_1_led"
+    id: strip    
+    
+    effects:
+      - random:
+      - addressable_rainbow:
+      - strobe:
+          name: Strobe_Green
+          colors:
+            - state: True
+              brightness: 75%
+              green: 100%
+              blue: 0%
+              red: 0%
+              duration: 500ms
+            - state: False
+              duration: 500ms
+      - strobe:              
+          name: Strobe_Red
+          colors:
+            - state: True
+              brightness: 75%
+              green: 0%
+              blue: 0%
+              red: 100%
+              duration: 500ms
+            - state: False
+              duration: 500ms
+      - strobe:
+          name: Strobe_Blue
+          colors:
+            - state: True
+              brightness: 70%
+              green: 0%
+              blue: 100%
+              red: 0%
+              duration: 500ms
+            - state: False
+              duration: 500ms
+
+binary_sensor:
+  - platform: gpio
+    pin:
+      number: GPIO5
+      mode: INPUT_PULLUP
+      inverted: True
+    name: "ws_1_button_1"
+    on_press:
+      - http_request.post:
+          url: http://10.14.12.114/light/0?turn=on
+      - http_request.post:
+          url: http://10.14.12.137/light/0?turn=on
+
+  - platform: gpio
+    pin:
+      number: GPIO12
+      mode: INPUT_PULLUP
+      inverted: True
+    name: "ws_1_button_2"
+    on_press:
+      - http_request.post:
+          url: http://10.14.12.114/light/0?turn=off
+      - http_request.post:
+          url: http://10.14.12.137/light/0?turn=off    
+    on_multi_click:
+    - timing:
+        - ON for at most 1s
+        - OFF for at most 0.5s
+        - ON for at most 1s
+        - OFF for at least 0.1s
+        - ON for at most 1s
+        - OFF for at most 0.5s
+        - ON for at most 1s
+        - OFF for at least 0.1s
+        - ON for at most 1s
+        - OFF for at most 0.5s
+        - ON for at most 1s
+        - OFF for at least 0.1s
+        - ON for at most 1s
+        - OFF for at most 0.5s
+        - ON for at most 1s
+        - OFF for at least 0.1s
+        - ON for at most 1s
+        - OFF for at most 0.5s
+        - ON for at most 1s
+        - OFF for at least 0.1s
+      then:
+        - logger.log: "Clicked 10 times"
+        - switch.turn_on: "restart_ws_1"  
+    
+  - platform: gpio
+    pin:
+      number: GPIO4
+      mode: INPUT_PULLUP
+      inverted: True
+    name: "ws_1_button_3"      
+    on_press:
+      - http_request.post:
+          url: http://10.14.12.114/light/0?turn=on
+      - http_request.post:
+          url: http://10.14.12.137/light/0?turn=on    
+  - platform: gpio
+    pin:
+      number: GPIO13
+      mode: INPUT_PULLUP
+      inverted: True
+    name: "ws_1_button_4"
+    on_press:
+      - http_request.post:
+          url: http://10.14.12.114/light/0?turn=off
+      - http_request.post:
+          url: http://10.14.12.137/light/0?turn=off
+switch:
+  - platform: restart
+    name: "Restart ws_1"
+    id: "restart_ws_1"
+
+sensor:
+  - platform: wifi_signal
+    name: "ws_1_WiFi_Signal_Sensor"
+    update_interval: 60s
+
