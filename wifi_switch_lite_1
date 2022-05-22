@@ -127,10 +127,21 @@ binary_sensor:
       inverted: True
     name: "ws_1_button_1"
     on_press:
-      - http_request.post:
-          url: http://10.14.12.114/light/0?turn=on
-      - http_request.post:
-          url: http://10.14.12.137/light/0?turn=on
+       if:
+        condition:
+         not:
+           mqtt.connected:
+        then:  
+         - http_request.post:
+             url: http://10.14.12.114/light/0?turn=on
+         - http_request.post:
+             url: http://10.14.12.137/light/0?turn=on
+         - http_request.post:
+             url: http://10.14.12.115/light/0?turn=on
+         - http_request.post:
+             url: http://10.14.12.194/light/0?turn=on
+         - http_request.post:
+             url: http://10.14.12.101/light/0?turn=on
 
   - platform: gpio
     pin:
@@ -139,10 +150,21 @@ binary_sensor:
       inverted: True
     name: "ws_1_button_2"
     on_press:
-      - http_request.post:
-          url: http://10.14.12.114/light/0?turn=off
-      - http_request.post:
-          url: http://10.14.12.137/light/0?turn=off    
+       if:
+        condition:
+         not:
+           mqtt.connected:
+        then:  
+         - http_request.post:
+             url: http://10.14.12.114/light/0?turn=off
+         - http_request.post:
+             url: http://10.14.12.137/light/0?turn=off
+         - http_request.post:
+             url: http://10.14.12.115/light/0?turn=off
+         - http_request.post:
+             url: http://10.14.12.194/light/0?turn=off
+         - http_request.post:
+             url: http://10.14.12.101/light/0?turn=off
     on_multi_click:
     - timing:
         - ON for at most 1s
@@ -176,10 +198,15 @@ binary_sensor:
       inverted: True
     name: "ws_1_button_3"      
     on_press:
-      - http_request.post:
-          url: http://10.14.12.114/light/0?turn=on
-      - http_request.post:
-          url: http://10.14.12.137/light/0?turn=on    
+       if:
+        condition:
+         not:
+           mqtt.connected:
+        then:  
+          - http_request.post:
+              url: http://10.14.12.114/light/0?turn=on
+          - http_request.post:
+              url: http://10.14.12.137/light/0?turn=on    
   - platform: gpio
     pin:
       number: GPIO13
@@ -187,10 +214,15 @@ binary_sensor:
       inverted: True
     name: "ws_1_button_4"
     on_press:
-      - http_request.post:
-          url: http://10.14.12.114/light/0?turn=off
-      - http_request.post:
-          url: http://10.14.12.137/light/0?turn=off
+      if:
+       condition:
+         not:
+          mqtt.connected:
+       then:
+         - http_request.post:
+             url: http://10.14.12.114/light/0?turn=off
+         - http_request.post:
+             url: http://10.14.12.137/light/0?turn=off
 switch:
   - platform: restart
     name: "Restart ws_1"
